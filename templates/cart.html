@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Cart - Hotel Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+            background: #f8f9fa;
+        }
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            margin-left: 250px;
+        }
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .cart-title {
+            font-size: 1.8rem;
+            color: #2d3436;
+            margin: 0;
+        }
+        .cart-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        .cart-items {
+            padding: 1.5rem;
+        }
+        .cart-item {
+            display: flex;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            border-bottom: 1px solid #e0e0e0;
+            background: white;
+            transition: background-color 0.2s;
+        }
+        .cart-item:hover {
+            background: #f8f9fa;
+        }
+        .cart-item-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .cart-item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .cart-item-details {
+            flex: 1;
+        }
+        .cart-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+        .cart-item-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2d3436;
+            margin: 0;
+        }
+        .cart-item-price {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #009933;
+        }
+        .cart-item-description {
+            color: #636e72;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: #f8f9fa;
+            padding: 0.5rem;
+            border-radius: 8px;
+            width: fit-content;
+        }
+        .btn-quantity {
+            background: #e6f4ea;
+            color: #009933;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .btn-quantity:hover {
+            background: #009933;
+            color: white;
+        }
+        .quantity-display {
+            min-width: 2.5rem;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        .cart-summary {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-top: 2rem;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            color: #2d3436;
+        }
+        .summary-row.total {
+            font-size: 1.4rem;
+            font-weight: 600;
+            border-top: 2px solid #e0e0e0;
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+        .checkout-section {
+            margin-top: 2rem;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .delivery-address {
+            margin-bottom: 1.5rem;
+        }
+        .delivery-address input {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-top: 0.5rem;
+        }
+        .btn-checkout {
+            width: 100%;
+            background: #009933;
+            color: white;
+            border: none;
+            padding: 1.2rem;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+            transition: background 0.2s;
+        }
+        .btn-checkout:hover:not(:disabled) {
+            background: #007a29;
+        }
+        .btn-checkout:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .empty-cart {
+            text-align: center;
+            padding: 3rem;
+            color: #636e72;
+        }
+        .empty-cart i {
+            font-size: 4rem;
+            color: #e0e0e0;
+            margin-bottom: 1rem;
+        }
+        .empty-cart h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .btn-continue-shopping {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #009933;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 1rem;
+            transition: background 0.2s;
+        }
+        .btn-continue-shopping:hover {
+            background: #007a29;
+        }
+        .toast-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #009933;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+        .modal-title {
+            font-size: 1.5rem;
+            color: #2d3436;
+            margin-bottom: 1rem;
+        }
+        .modal-message {
+            color: #636e72;
+            margin-bottom: 1.5rem;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+        .modal-button {
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-confirm {
+            background: #009933;
+            color: white;
+            border: none;
+        }
+        .btn-cancel {
+            background: #f8f9fa;
+            color: #2d3436;
+            border: 1px solid #e0e0e0;
+        }
+        .order-success {
+            text-align: center;
+            padding: 2rem;
+        }
+        .order-success i {
+            font-size: 4rem;
+            color: #009933;
+            margin-bottom: 1rem;
+        }
+        .order-id {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            font-family: monospace;
+            font-size: 1.2rem;
+        }
+        .btn-track-order {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #009933;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 1rem;
+            transition: background 0.2s;
+        }
+        .btn-track-order:hover {
+            background: #007a29;
+        }
+    </style>
+</head>
+<body>
+    <div class="toast-message" id="toastMessage"></div>
+    
+    <!-- Update the modal IDs to match the JavaScript functions -->
+    <div class="modal" id="confirmationModal">
+        <div class="modal-content">
+            <h3 class="modal-title">Confirm Order</h3>
+            <p class="modal-message">Are you sure you want to place this order?</p>
+            <div class="modal-buttons">
+                <button class="modal-button btn-cancel" onclick="cancelOrder()">Cancel</button>
+                <button class="modal-button btn-confirm" onclick="confirmOrder()">Confirm Order</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="successModal">
+        <div class="modal-content">
+            <div class="order-success">
+                <i class="fas fa-check-circle" style="font-size:2.2rem;color:#009933;"></i>
+                <h2>Order Confirmed!</h2>
+                <p>Your order has been placed and is being processed.</p>
+                <div class="order-id" id="orderId" style="margin:1rem 0;font-size:1.2rem;font-weight:bold;"></div>
+                <div style="display:flex;gap:1rem;justify-content:center;margin-top:1.5rem;">
+                    <a href="{{ url_for('track_order') }}" class="btn-track-order" style="background:#009933;color:white;padding:0.6rem 1.2rem;border-radius:8px;text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:0.5rem;">
+                        <i class="fas fa-truck" style="font-size:1rem;"></i> Track Order
+                    </a>
+                    <a href="{{ url_for('index') }}" class="btn-go-home" style="background:#f8f9fa;color:#2d3436;padding:0.6rem 1.2rem;border-radius:8px;text-decoration:none;font-weight:600;border:1px solid #e0e0e0;display:inline-flex;align-items:center;gap:0.5rem;">
+                        <i class="fas fa-home" style="font-size:1rem;"></i> Go Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-hotel"></i>
+                <h1>Your Cart</h1>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="{{ url_for('index') }}"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="{{ url_for('order') }}"><i class="fas fa-utensils"></i> Order</a></li>
+                    <li class="active"><a href="{{ url_for('cart') }}"><i class="fas fa-shopping-cart"></i> Cart</a></li>
+                    <li><a href="{{ url_for('track_order') }}"><i class="fas fa-truck"></i> Track Order</a></li>
+                    <li><a href="{{ url_for('user_portal') }}"><i class="fas fa-user"></i> User Portal</a></li>
+                    <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="cart-header">
+                <h1 class="cart-title">Your Cart</h1>
+                <a href="{{ url_for('order') }}" class="btn-continue-shopping">
+                    <i class="fas fa-arrow-left"></i> Continue Shopping
+                </a>
+            </div>
+
+            <div class="cart-container">
+                <div class="cart-items" id="cartItems">
+                    <!-- Cart items will be dynamically inserted here -->
+                </div>
+            </div>
+
+            <div class="cart-summary" id="cartSummary" style="display: none;">
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span id="subtotal">PKR 0</span>
+                </div>
+                <div class="summary-row">
+                    <span>Delivery Fee</span>
+                    <span>PKR 50</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total</span>
+                    <span id="totalAmount">PKR 0</span>
+                </div>
+            </div>
+
+            <div class="checkout-section" id="checkoutSection" style="display: none;">
+                <div class="delivery-address">
+                    <label for="deliveryAddress">Delivery Address</label>
+                    <input type="text" id="deliveryAddress" placeholder="Enter your delivery address" required>
+                </div>
+                <button class="btn-checkout" id="checkoutButton" disabled>
+                    <i class="fas fa-lock"></i> Proceed to Checkout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        let selectedHotelId = null;
+        const cartItems = document.getElementById('cartItems');
+        const cartSummary = document.getElementById('cartSummary');
+        const checkoutSection = document.getElementById('checkoutSection');
+        const subtotalElement = document.getElementById('subtotal');
+        const totalAmountElement = document.getElementById('totalAmount');
+        const deliveryAddress = document.getElementById('deliveryAddress');
+        const checkoutButton = document.getElementById('checkoutButton');
+        const toastMessage = document.getElementById('toastMessage');
+
+        function updateCartCount() {
+            const cartCount = document.getElementById('cartCount');
+            if (!cartCount) return; // Prevent error if not present
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = totalItems;
+            cartCount.style.display = totalItems > 0 ? 'block' : 'none';
+        }
+
+        function showModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.style.display = 'flex';
+        }
+
+        function hideModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.style.display = 'none';
+        }
+
+        function confirmOrder() {
+            const deliveryAddress = document.getElementById('deliveryAddress').value.trim();
+            
+            if (!deliveryAddress) {
+                showToast('Please enter a delivery address', 'error');
+                return;
+            }
+
+            if (cart.length === 0) {
+                showToast('Your cart is empty', 'error');
+                return;
+            }
+
+            // Get hotel_id from the first item in cart
+            const hotelId = cart[0].hotel_id;
+            if (!hotelId) {
+                showToast('Hotel information is missing. Please try adding items to cart again.', 'error');
+                return;
+            }
+
+            // Prepare order data
+            const orderData = {
+                hotel_id: hotelId,
+                items: cart.map(item => ({
+                    menu_id: item.menu_id,
+                    quantity: item.quantity
+                })),
+                delivery_address: deliveryAddress
+            };
+
+            console.log('Sending order data:', orderData); // Debug log
+
+            fetch('/place_order', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(orderData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                try {
+                    console.log('Received response:', data); // Debug log
+
+                    if (data.order_id) {
+                        // Clear cart
+                        localStorage.removeItem('cart');
+                        cart = [];
+                        updateCartCount();
+
+                        // Debug: Modal logic
+                        console.log('Hiding confirmation modal');
+                        hideModal('confirmationModal');
+                        console.log('Showing success modal');
+                        showModal('successModal');
+
+                        // Update order ID in success modal
+                        const orderIdElem = document.getElementById('orderId');
+                        if (orderIdElem) {
+                            orderIdElem.textContent = data.order_id;
+                        } else {
+                            console.error('Order ID element not found!');
+                        }
+                        // Prevent further code and catch from running
+                        return;
+                    } else {
+                        showToast(data.error || 'Failed to place order', 'error');
+                    }
+                } catch (err) {
+                    console.error('Error in .then block:', err);
+                }
+            })
+            .catch(error => {
+                // Only show error if the fetch itself fails
+                console.error('Error in fetch or processing:', error);
+                showToast('Failed to place order. Please try again.', 'error');
+            });
+        }
+
+        function cancelOrder() {
+            hideModal('confirmationModal');
+        }
+
+        function trackOrder() {
+            window.location.href = '/track_order';
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                ${message}
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }, 100);
+        }
+
+        function formatPrice(price) {
+            return `PKR ${price.toFixed(0)}`;
+        }
+
+        function calculateSubtotal(item) {
+            return item.price * item.quantity;
+        }
+
+        function updateCart() {
+            if (cart.length === 0) {
+                cartItems.innerHTML = `
+                    <div class="empty-cart">
+                        <i class="fas fa-shopping-cart"></i>
+                        <h3>Your cart is empty</h3>
+                        <p>Looks like you haven't added any items to your cart yet.</p>
+                        <a href="{{ url_for('order') }}" class="btn-continue-shopping">
+                            <i class="fas fa-utensils"></i> Start Ordering
+                        </a>
+                    </div>
+                `;
+                cartSummary.style.display = 'none';
+                checkoutSection.style.display = 'none';
+                return;
+            }
+
+            const subtotal = cart.reduce((sum, item) => sum + calculateSubtotal(item), 0);
+            const total = subtotal + 50;
+
+            cartItems.innerHTML = cart.map(item => `
+                <div class="cart-item">
+                    <div class="cart-item-image">
+                        <img src="https://source.unsplash.com/300x200/?food,${encodeURIComponent(item.item_name)}" alt="${item.item_name}">
+                    </div>
+                    <div class="cart-item-details">
+                        <div class="cart-item-header">
+                            <h3 class="cart-item-name">${item.item_name}</h3>
+                            <span class="cart-item-price">${formatPrice(item.price)} each</span>
+                        </div>
+                        <p class="cart-item-description">${item.description || ''}</p>
+                        <div class="quantity-control">
+                            <button class="btn-quantity" onclick="updateQuantity(${item.menu_id}, ${item.quantity - 1})">-</button>
+                            <span class="quantity-display">${item.quantity}</span>
+                            <button class="btn-quantity" onclick="updateQuantity(${item.menu_id}, ${item.quantity + 1})">+</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            subtotalElement.textContent = formatPrice(subtotal);
+            totalAmountElement.textContent = formatPrice(total);
+            cartSummary.style.display = 'block';
+            checkoutSection.style.display = 'block';
+        }
+
+        function updateQuantity(menu_id, newQuantity) {
+            if (newQuantity < 1) {
+                removeFromCart(menu_id);
+                return;
+            }
+            const item = cart.find(item => item.menu_id == menu_id);
+            if (item) {
+                item.quantity = newQuantity;
+                localStorage.setItem('cart', JSON.stringify(cart));
+                updateCart();
+                showToast(`Updated quantity of ${item.item_name} to ${newQuantity}`);
+            }
+        }
+
+        function removeFromCart(menu_id) {
+            const item = cart.find(item => item.menu_id == menu_id);
+            if (item) {
+                cart = cart.filter(item => item.menu_id != menu_id);
+                localStorage.setItem('cart', JSON.stringify(cart));
+                updateCart();
+                showToast(`Removed ${item.item_name} from cart`);
+            }
+        }
+
+        // Initialize cart
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCart();
+
+            // Delivery address input
+            if (deliveryAddress) {
+                deliveryAddress.addEventListener('input', () => {
+                    checkoutButton.disabled = !deliveryAddress.value;
+                });
+            }
+
+            // Checkout button
+            if (checkoutButton) {
+                checkoutButton.addEventListener('click', () => {
+                    if (cart.length === 0 || !deliveryAddress.value) {
+                        showToast('Please add items to cart and provide a delivery address', 'error');
+                        return;
+                    }
+
+                    const hotel_id = cart[0].hotel_id;
+                    console.log('Cart contents:', cart);
+                    console.log('Hotel ID:', hotel_id);
+
+                    if (!hotel_id) {
+                        showToast('Error: Hotel information is missing. Please try adding items to cart again.', 'error');
+                        return;
+                    }
+
+                    const allSameHotel = cart.every(item => item.hotel_id === hotel_id);
+                    if (!allSameHotel) {
+                        showToast('Error: All items must be from the same hotel. Please clear your cart and try again.', 'error');
+                        return;
+                    }
+
+                    showModal('confirmationModal');
+                });
+            }
+
+            // Initialize cart count on page load
+            updateCartCount();
+        });
+    </script>
+</body>
+</html> 

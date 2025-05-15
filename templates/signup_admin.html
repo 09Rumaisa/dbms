@@ -1,0 +1,101 @@
+<!-- signup_admin.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Signup - Hotel Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <i class="fas fa-hotel"></i>
+                <h1>Admin Registration</h1>
+                <p>Register as a hotel admin</p>
+            </div>
+            <form id="adminSignupForm" class="auth-form" autocomplete="off">
+                <div class="form-group">
+                    <label for="name"><i class="fas fa-user"></i> Full Name</label>
+                    <input type="text" id="name" name="name" required placeholder="Enter your name">
+                </div>
+                <div class="form-group">
+                    <label for="email"><i class="fas fa-envelope"></i> Email Address</label>
+                    <input type="email" id="email" name="email" required placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label for="phone_number"><i class="fas fa-phone"></i> Phone Number</label>
+                    <input type="text" id="phone_number" name="phone_number" required placeholder="Enter your phone number">
+                </div>
+                <div class="form-group">
+                    <label for="password"><i class="fas fa-lock"></i> Password</label>
+                    <div class="password-input">
+                        <input type="password" id="password" name="password" required placeholder="Create a password">
+                        <i class="fas fa-eye toggle-password"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="role"><i class="fas fa-user-shield"></i> Role</label>
+                    <input type="text" id="role" name="role" value="admin" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="hotel_id"><i class="fas fa-hotel"></i> Hotel</label>
+                    <select id="hotel_id" name="hotel_id" required>
+                        <option value="">Select a hotel</option>
+                        {% for hotel in hotels %}
+                        <option value="{{ hotel[0] }}">{{ hotel[1] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn-auth">
+                    <i class="fas fa-user-plus"></i> Sign Up
+                </button>
+                <div class="msg" id="msg"></div>
+            </form>
+            <div class="auth-footer">
+                <p>Already have an account? <a href="{{ url_for('login') }}?type=admin" class="auth-link">Login here</a></p>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Toggle password visibility
+        document.querySelector('.toggle-password').addEventListener('click', function() {
+            const passwordInput = document.querySelector('#password');
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+        document.getElementById('adminSignupForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const formData = {
+                name: document.getElementById('name').value,
+                password: document.getElementById('password').value,
+                email: document.getElementById('email').value,
+                phone_number: document.getElementById('phone_number').value,
+                role: document.getElementById('role').value,
+                hotel_id: document.getElementById('hotel_id').value
+            };
+            fetch('{{ url_for("signup_admin") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('msg').textContent = data.message || data.error || 'Signup successful!';
+                if (data.message) {
+                    setTimeout(() => { window.location.href = '{{ url_for('login') }}?type=admin'; }, 1500);
+                }
+            })
+            .catch(error => {
+                document.getElementById('msg').textContent = 'Error: ' + error.message;
+            });
+        });
+    </script>
+</body>
+</html>

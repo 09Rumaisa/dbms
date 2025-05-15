@@ -1,0 +1,14 @@
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h1><i class="fas fa-hotel"></i> Hotel App</h1>
+    </div>
+    <nav class="sidebar-nav">
+        <ul>
+            <li class="{% if active_page == 'index' %}active{% endif %}"><a href="{{ url_for('index') }}"><i class="fas fa-home"></i> Index</a></li>
+            <li class="{% if active_page == 'order' %}active{% endif %}"><a href="{{ url_for('order') }}"><i class="fas fa-utensils"></i> Order</a></li>
+            <li class="{% if active_page == 'track_order' %}active{% endif %}"><a href="{{ url_for('track_order') }}"><i class="fas fa-truck"></i> Track Orders</a></li>
+            <li class="{% if active_page == 'user_portal' %}active{% endif %}"><a href="{{ url_for('user_portal') }}"><i class="fas fa-user"></i> User Portal</a></li>
+            <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Log out</a></li>
+        </ul>
+    </nav>
+</div> 

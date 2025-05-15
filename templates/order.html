@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Food - Hotel Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+            background: #f8f9fa;
+        }
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            margin-left: 250px;
+            display: flex;
+            gap: 2rem;
+        }
+        .menu-section {
+            flex: 1;
+            max-width: 800px;
+        }
+        .hotel-select {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        .hotel-select select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            color: #333;
+            background: #f8f9fa;
+        }
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        .menu-item {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .menu-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .menu-item-image {
+            position: relative;
+            height: 160px;
+        }
+        .menu-item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .availability-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .available {
+            background: #e6f4ea;
+            color: #1e7e34;
+        }
+        .unavailable {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .menu-item-content {
+            padding: 1.2rem;
+        }
+        .menu-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.8rem;
+        }
+        .menu-item-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2d3436;
+            margin: 0;
+        }
+        .menu-item-price {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #009933;
+        }
+        .menu-item-description {
+            color: #636e72;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+        .menu-item-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn-add-to-cart {
+            background: #009933;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.2s;
+        }
+        .btn-add-to-cart:hover:not(.disabled) {
+            background: #007a29;
+        }
+        .btn-add-to-cart.disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .cart-section {
+            width: 350px;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+        }
+        .cart-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        .cart-header {
+            padding: 1.2rem;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .cart-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2d3436;
+            margin: 0;
+        }
+        .btn-clear-cart {
+            background: none;
+            border: none;
+            color: #dc3545;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .cart-items {
+            padding: 1.2rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .cart-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.8rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 0.8rem;
+        }
+        .cart-item-details {
+            flex: 1;
+        }
+        .cart-item-name {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #2d3436;
+            margin: 0 0 0.2rem 0;
+        }
+        .cart-item-price {
+            font-size: 0.9rem;
+            color: #009933;
+            font-weight: 600;
+        }
+        .cart-item-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-quantity {
+            background: #e6f4ea;
+            color: #009933;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-quantity:hover {
+            background: #009933;
+            color: white;
+        }
+        .cart-footer {
+            padding: 1.2rem;
+            border-top: 1px solid #e0e0e0;
+        }
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        .delivery-address {
+            margin-bottom: 1rem;
+        }
+        .delivery-address input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+        .payment-info {
+            background: #f8f9fa;
+            padding: 0.8rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: #636e72;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-place-order {
+            width: 100%;
+            background: #009933;
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: background 0.2s;
+        }
+        .btn-place-order:hover:not(:disabled) {
+            background: #007a29;
+        }
+        .btn-place-order:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        @media (max-width: 1200px) {
+            .main-content {
+                flex-direction: column;
+            }
+            .cart-section {
+                width: 100%;
+                position: static;
+            }
+        }
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            .menu-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+        }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .toast-success {
+            background: #009933;
+        }
+        .toast-error {
+            background: #dc3545;
+        }
+        .toast i {
+            font-size: 1.2rem;
+        }
+        .cart-empty-message {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+            font-style: italic;
+        }
+        .cart-item-added {
+            animation: highlight 1s ease-out;
+        }
+        @keyframes highlight {
+            0% { background: #e6f4ea; }
+            100% { background: #f8f9fa; }
+        }
+        .cart-item-subtotal {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 0.2rem;
+        }
+        .cart-summary {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .cart-summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .cart-summary-row.total {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2d3436;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #e6f4ea;
+            padding: 0.2rem;
+            border-radius: 4px;
+        }
+        .quantity-display {
+            min-width: 2rem;
+            text-align: center;
+            font-weight: 600;
+        }
+        .cart-icon {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: white;
+            padding: 1rem;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: #2d3436;
+            transition: transform 0.2s;
+        }
+        .cart-icon:hover {
+            transform: scale(1.05);
+        }
+        .cart-icon i {
+            font-size: 1.2rem;
+            color: #009933;
+        }
+        .cart-count {
+            background: #009933;
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="toast-message" id="toastMessage"></div>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-hotel"></i>
+                <h1>Order Menu</h1>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="{{ url_for('index') }}"><i class="fas fa-home"></i> Home</a></li>
+                    <li class="active"><a href="{{ url_for('order') }}"><i class="fas fa-utensils"></i> Order</a></li>
+                    <li><a href="{{ url_for('track_order') }}"><i class="fas fa-truck"></i> Track Order</a></li>
+                    <li><a href="{{ url_for('user_portal') }}"><i class="fas fa-user"></i> User Portal</a></li>
+                    <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <a href="{{ url_for('cart') }}" class="cart-icon">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-count" id="cartCount">0</span>
+            </a>
+            <div class="menu-section" style="max-width: 100%;">
+                <div class="hotel-select">
+                    <form id="hotelSelectForm" method="get">
+                        <select id="hotel_id" name="hotel_id" required onchange="this.form.submit()">
+                            <option value="">Select a hotel</option>
+                            {% for hotel in hotels %}
+                            <option value="{{ hotel[0] }}" {% if selected_hotel_id and hotel[0]|string == selected_hotel_id|string %}selected{% endif %}>{{ hotel[1] }}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </div>
+
+                {% if selected_hotel_id %}
+                <div class="menu-grid">
+                    {% for item in menu %}
+                    <div class="menu-item">
+                        <div class="menu-item-image">
+                            <img src="https://source.unsplash.com/300x200/?food,{{ item.item_name }}" alt="{{ item.item_name }}">
+                            {% if item.availability %}
+                            <span class="availability-badge available">Available</span>
+                            {% else %}
+                            <span class="availability-badge unavailable">Unavailable</span>
+                            {% endif %}
+                        </div>
+                        <div class="menu-item-content">
+                            <div class="menu-item-header">
+                                <h3 class="menu-item-title">{{ item.item_name }}</h3>
+                                <span class="menu-item-price">PKR {{ '%.0f'|format(item.price) }}</span>
+                            </div>
+                            <p class="menu-item-description">{{ item.description }}</p>
+                            <div class="menu-item-footer">
+                                {% if item.availability %}
+                                <button class="btn-add-to-cart" 
+                                    onclick="addToCart(this)"
+                                    data-menu-id="{{ item.menu_id }}" 
+                                    data-item-name="{{ item.item_name }}" 
+                                    data-price="{{ item.price }}"
+                                    data-description="{{ item.description }}"
+                                    data-hotel-id="{{ selected_hotel_id }}">
+                                    <i class="fas fa-plus"></i> Add to Cart
+                                </button>
+                                {% else %}
+                                <button class="btn-add-to-cart disabled" disabled>
+                                    <i class="fas fa-times"></i> Unavailable
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        let selectedHotelId = null;
+
+        function updateCartCount() {
+            const cartCount = document.getElementById('cartCount');
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = totalItems;
+            cartCount.style.display = totalItems > 0 ? 'block' : 'none';
+        }
+
+        function addToCart(button) {
+            const menuId = button.dataset.menuId;
+            const itemName = button.dataset.itemName;
+            const price = parseFloat(button.dataset.price);
+            const hotelId = button.dataset.hotelId;
+
+            if (!hotelId) {
+                showToast('Please select a hotel first', 'error');
+                return;
+            }
+
+            // Check if adding item from different hotel
+            if (selectedHotelId && selectedHotelId !== hotelId) {
+                showToast('Cannot add items from different hotels', 'error');
+                return;
+            }
+
+            selectedHotelId = hotelId;
+            const existingItem = cart.find(item => item.menu_id === menuId);
+                
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cart.push({
+                    menu_id: menuId,
+                    item_name: itemName,
+                    price: price,
+                    quantity: 1,
+                    hotel_id: hotelId
+                });
+            }
+
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            showToast(`${itemName} added to cart`, 'success');
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                ${message}
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }, 100);
+        }
+
+        // Initialize cart count on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            updateCartCount();
+        });
+    </script>
+</body>
+</html> 

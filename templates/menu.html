@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu - Food Delivery</title>
+</head>
+<body>
+    <h1>Menu</h1>
+
+    <form method="GET" action="/menu">
+        <input type="text" name="hotel" placeholder="Search Hotel..." required>
+        <button type="submit">Search</button>
+    </form>
+
+    {% if menu %}
+        {% for item in menu %}
+            <div class="hotel">
+                <h3>{{ item.hotel_name }}</h3>
+                <div class="menu-item">
+                    <p>{{ item.item_name }} - {{ item.price }}</p>
+                    <form action="/order" method="POST">
+                        <input type="hidden" name="item_ids" value="{{ item.item_id }}">
+                        <button type="submit">Add to Order</button>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No items found for this hotel.</p>
+    {% endif %}
+</body>
+</html>

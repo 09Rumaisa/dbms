@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <i class="fas fa-hotel"></i>
+                <h1>Welcome to Hotel Management</h1>
+                <p>Please choose your login type</p>
+            </div>
+            
+            <div class="auth-options">
+                <a href="{{ url_for('login') }}?type=user" class="btn-auth">
+                    <i class="fas fa-user"></i>
+                    Login as User
+                </a>
+                <a href="{{ url_for('login') }}?type=admin" class="btn-auth">
+                    <i class="fas fa-user-shield"></i>
+                    Login as Admin
+                </a>
+            </div>
+
+            <div class="auth-footer">
+            </div>
+        </div>
+    </div>
+</body>
+</html>

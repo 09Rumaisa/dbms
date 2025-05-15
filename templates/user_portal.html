@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Portal - Rate Your Order</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f8f9fa;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 260px;
+            background: #009933;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            padding-top: 0;
+        }
+        .sidebar-header {
+            padding: 2rem 1rem 1rem 1rem;
+            text-align: center;
+            background: #007a29;
+        }
+        .sidebar-header h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .sidebar-nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .sidebar-nav li {
+            margin: 0;
+        }
+        .sidebar-nav a {
+            display: block;
+            padding: 1.1rem 2rem;
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 500;
+            border-left: 4px solid transparent;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .sidebar-nav a:hover, .sidebar-nav .active a {
+            background: #e6f4ea;
+            color: #009933;
+            border-left: 4px solid #009933;
+        }
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+        }
+        .main-header {
+            background: #009933;
+            color: white;
+            padding: 2rem 2rem 1.5rem 2rem;
+            border-bottom-left-radius: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .main-header h2 {
+            margin: 0;
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+        .main-header p {
+            margin: 0.5rem 0 0 0;
+            font-size: 1.2rem;
+            font-weight: 400;
+        }
+        .user-portal-section {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .user-portal-card {
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+            padding: 2.5rem 3rem;
+            text-align: center;
+            max-width: 500px;
+        }
+        .user-portal-card h3 {
+            margin: 0 0 1rem 0;
+            font-size: 2rem;
+            color: #009933;
+        }
+        .user-portal-card p {
+            font-size: 1.2rem;
+            color: #444;
+        }
+        .alert {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            background: #e6f4ea;
+            color: #009933;
+            font-weight: 500;
+        }
+        @media (max-width: 900px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                flex-direction: row;
+                padding: 0;
+            }
+            .sidebar-header {
+                display: none;
+            }
+            .sidebar-nav ul {
+                display: flex;
+                flex-direction: row;
+                width: 100%;
+            }
+            .sidebar-nav li {
+                flex: 1;
+            }
+            .sidebar-nav a {
+                padding: 1rem 0.5rem;
+                text-align: center;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1><i class="fas fa-user"></i> User Portal</h1>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="{{ url_for('index') }}"><i class="fas fa-home"></i> Index</a></li>
+                    <li><a href="{{ url_for('order') }}"><i class="fas fa-utensils"></i> Order</a></li>
+                    <li><a href="{{ url_for('track_order') }}"><i class="fas fa-truck"></i> Track Orders</a></li>
+                    <li class="active"><a href="{{ url_for('user_portal') }}"><i class="fas fa-user"></i> User Portal</a></li>
+                    <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Log out</a></li>
+                </ul>
+            </nav>
+        </div>
+        <div class="main-content">
+            <div class="main-header">
+                <h2>User Portal</h2>
+                <p>Rate your order and leave feedback</p>
+            </div>
+            <div class="user-portal-section">
+                <div class="user-portal-card">
+                    <h3>Rate Your Order</h3>
+                    <p>Thank you for using our service! Please rate your order and leave feedback below.</p>
+                    {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                            {% for msg in messages %}
+                                <div class="alert alert-success">{{ msg }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    <form method="POST">
+                        <div style="margin-bottom:1rem;">
+                            <label for="order_id">Order ID:</label><br>
+                            <input type="number" id="order_id" name="order_id" required style="padding:0.6rem 1rem;border-radius:8px;border:1px solid #e0e0e0;width:100%;margin-top:0.3rem;">
+                        </div>
+                        <div style="margin-bottom:1rem;">
+                            <label for="food_rating">Food Rating:</label><br>
+                            <select id="food_rating" name="food_rating" required style="padding:0.6rem 1rem;border-radius:8px;border:1px solid #e0e0e0;width:100%;margin-top:0.3rem;">
+                                <option value="">Select</option>
+                                <option value="1">1 - Poor</option>
+                                <option value="2">2 - Fair</option>
+                                <option value="3">3 - Good</option>
+                                <option value="4">4 - Very Good</option>
+                                <option value="5">5 - Excellent</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom:1rem;">
+                            <label for="delivery_rating">Delivery Rating:</label><br>
+                            <select id="delivery_rating" name="delivery_rating" required style="padding:0.6rem 1rem;border-radius:8px;border:1px solid #e0e0e0;width:100%;margin-top:0.3rem;">
+                                <option value="">Select</option>
+                                <option value="1">1 - Poor</option>
+                                <option value="2">2 - Fair</option>
+                                <option value="3">3 - Good</option>
+                                <option value="4">4 - Very Good</option>
+                                <option value="5">5 - Excellent</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom:1.5rem;">
+                            <label for="comments">Comments:</label><br>
+                            <textarea id="comments" name="comments" rows="3" style="padding:0.6rem 1rem;border-radius:8px;border:1px solid #e0e0e0;width:100%;margin-top:0.3rem;"></textarea>
+                        </div>
+                        <button type="submit" style="background:#009933;color:white;padding:0.9rem 2rem;border:none;border-radius:8px;font-size:1.1rem;font-weight:600;cursor:pointer;transition:background 0.2s;">Submit Feedback</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 
